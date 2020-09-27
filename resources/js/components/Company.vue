@@ -33,7 +33,11 @@
 </template>
 
 <script>
+import sendRequest from "../common";
+
 export default {
+
+    props: ['company_id'],
 
     data: function () {
         return {
@@ -72,49 +76,42 @@ export default {
                 form_data.set(field_name, form_fields[field_name]);
             }
 
+            if (this.company_id) {
+                form_data.set('id', this.company_id);
+            }
+
             // required by Laravel
             form_data.set('_token', document.head.querySelector("meta[name=csrf-token]").content);
-alert(`${window.location.origin}/coding-test/save-company`);
+
             // submitting form
-            fetch(`${window.location.origin}/coding-test/save-company`, {
-                method: 'POST',
-                body: form_data,
-                headers: {'Accept': 'application/json'}
-            }).finally(() => {
+            sendRequest('save-company', 'POST', form_data, () => {
                 this.is_submitting = false;
 
-            }).then((response) => {
+            }, () => {
+                this.resetForm();
 
-                    const response_code = response.status;
-
-                    response.json().then((response) => {
-
-                        if (response_code === 200) {
-                            if (!response.has_err) {
-                                this.resetForm();
-                            }
-                            alert(response.message);
-
-                        } else if (response_code === 422) { // showing validation errors
-                            const errors = response.errors;
-                            for (const field_name in errors) {
-                                this.form_data.errors[field_name] = errors[field_name][0];
-                            }
-
-                        } else {
-                            console.log(`Looks like there was a problem. Status Code: ${response.status}`);
-                            return;
-                        }
-
-                    });
-
-
+            }, (response) => {
+                const errors = response.errors;
+                for (const field_name in errors) {
+                    this.form_data.errors[field_name] = errors[field_name][0];
                 }
-            ).catch(function (err) {
-                console.log('Fetch Error :-S', err);
             });
 
         },
+
+        getCompany: function () {
+            // if it is edit case
+            if (this.company_id) {
+                sendRequest(`get-company/${this.company_id}`, 'GET', '', '', (response) => {
+                    const company = response.data.model;
+                    this.form_data.fields.name = company.name;
+                    this.form_data.fields.address = company.address;
+                    this.form_data.fields.telephone = company.telephone;
+                });
+            }
+
+        },
+
 
         resetForm: function () {
             const fields = this.form_data.fields;
@@ -131,6 +128,10 @@ alert(`${window.location.origin}/coding-test/save-company`);
         }
 
     },
+
+    created() {
+        this.getCompany();
+    }
 
 }
 </script>

@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import sendRequest from "../common";
+
 export default {
 
     data: function () {
@@ -111,44 +113,25 @@ export default {
             form_data.set('_token', document.head.querySelector("meta[name=csrf-token]").content);
 
             // submitting form
-            fetch(`${window.location.origin}/coding-test/save-employee`, {
-                method: 'POST',
-                body: form_data,
-                headers: {'Accept': 'application/json'}
-            }).finally(() => {
+            sendRequest('save-employee', 'POST', form_data, () => {
                 this.is_submitting = false;
 
-            }).then((response) => {
+            }, () => {
+                this.resetForm();
 
-                    const response_code = response.status;
-
-                    response.json().then((response) => {
-
-                        if (response_code === 200) {
-                            if (!response.has_err) {
-                                this.resetForm();
-                            }
-                            alert(response.message);
-
-                        } else if (response_code === 422) { // showing validation errors
-                            const errors = response.errors;
-                            for (const field_name in errors) {
-                                this.form_data.errors[field_name] = errors[field_name][0];
-                            }
-
-                        } else {
-                            console.log(`Looks like there was a problem. Status Code: ${response.status}`);
-                            return;
-                        }
-
-                    });
-
-
+            }, (response) => {
+                const errors = response.errors;
+                for (const field_name in errors) {
+                    this.form_data.errors[field_name] = errors[field_name][0];
                 }
-            ).catch(function (err) {
-                console.log('Fetch Error :-S', err);
             });
 
+        },
+
+        getCompanies: function () {
+            sendRequest('get-companies', 'GET', '', '', (response) => {
+                this.companies = response.data;
+            });
         },
 
         resetForm: function () {
@@ -164,35 +147,6 @@ export default {
                 this.form_data.errors[field_name] = '';
             }
         },
-
-        getCompanies: function () {
-
-            fetch(`${window.location.origin}/coding-test/get-companies`, {
-                method: 'GET',
-                headers: {'Accept': 'application/json'}
-            }).then((response) => {
-
-                    const response_code = response.status;
-
-                    response.json().then((response) => {
-
-                        if (response_code === 200) {
-                            if (!response.has_err) {
-                                this.companies = response.data;
-                            }
-
-                        } else {
-                            console.log(`Looks like there was a problem. Status Code: ${response.status}`);
-                            return;
-                        }
-
-                    });
-                }
-            ).catch(function (err) {
-                console.log('Fetch Error :-S', err);
-            });
-
-        }
 
     },
 

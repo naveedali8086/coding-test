@@ -1,54 +1,84 @@
 <template>
-    <datatable :table_headers="column_names"
-               :uri="uri"
-               v-bind:caption="caption"
-               v-bind:generateBodyRows="generateBodyRows"/>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header font-weight-bold">Employees</div>
+
+                    <div class="card-body">
+
+                        <div class="table-responsive">
+
+                            <table class="table table-striped">
+
+                                <thead>
+
+                                <th v-for="column in this.column_names" :key="column" scope="col">{{ column }}</th>
+
+                                </thead>
+
+                                <tbody>
+
+                                <tr v-for="(employee, index) in this.table_data" :key="employee.id">
+                                    <td>{{ index + 1 }}</td>
+                                    <td>{{ employee.name }}</td>
+                                    <td>{{ employee.email }}</td>
+                                    <td>{{ employee.mobile_num }}</td>
+                                    <td>{{ employee.address }}</td>
+                                    <td>{{ employee.salary }}</td>
+                                    <td>{{ employee.company }}</td>
+                                    <td>
+                                        <delete-button :id="employee.id" uri="delete-employee"/>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
-import Datatable from "./Datatable";
+import sendRequest from "../common";
 
 export default {
-
-    components: {Datatable},
 
     data: function () {
 
         return {
-            column_names: [
-                'S.No.',
-                'Name',
-                'Email',
-                'Mobile No',
-                'Address',
-                'Salary',
-                'Company'
-            ],
-            caption: 'Employees',
-            uri: 'get-employees'
+            column_names: ['S.No.', 'Name', 'Email', 'Mobile No', 'Address', 'Salary', 'Company', 'Action'],
+            table_data: [],
+            fetching_data: false
         }
+
     },
 
     methods: {
 
-        generateBodyRows: function (data) {
-            let body_rows = '';
-            let counter = 0;
-            data.forEach((obj) => {
-                counter++;
-                body_rows += `<tr>
-                <td>${counter}</td>
-                <td>${obj.name}</td>
-                <td>${obj.email}</td>
-                <td>${obj.mobile_num}</td>
-                <td>${obj.address}</td>
-                <td>${obj.salary}</td>
-                <td>${obj.company}</td>
-                </tr>`;
+        getData: function () {
+
+            this.fetching_data = true;
+
+            sendRequest('get-employees', 'GET', '', () => {
+                this.fetching_data = false;
+
+            }, (response) => {
+                this.table_data = response.data;
             });
-            return body_rows;
+
         }
 
+    },
+
+    created() {
+        this.getData();
     }
 
 }

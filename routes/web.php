@@ -15,29 +15,30 @@ use Illuminate\Support\Facades\Route;
 
 /****** Company Routes *******/
 
-Route::get('/company', function () {
-    return view('layouts.app', ['component'=>'<company/>']);
+Route::get('/company/{id?}', function ($id = '') {
+    return view('layouts.app', ['component' => "<company company_id='$id' />"]);
 })->name('company');
 
 Route::get('/show-companies', function () {
-    return view('layouts.app', ['component'=>'<companies-datatable/>']);
+    return view('layouts.app', ['component' => '<companies-datatable/>']);
 })->name('show_companies');
 
 Route::post('/save-company', 'CompanyController@save');
 Route::get('/get-companies', 'CompanyController@getCompanies');
-
-
+Route::post('/delete-company', 'CompanyController@delete');
+Route::get('/get-company/{id?}', 'CompanyController@getCompany');
 
 /****** Employee Routes *******/
 
 Route::get('/employee', function () {
-    return view('layouts.app', ['component'=>'<employee/>']);
+    return view('layouts.app', ['component' => '<employee/>']);
 })->name('employee');
 
 Route::get('/show-employees', function () {
-    return view('layouts.app', ['component'=>'<employees-datatable/>']);
+    return view('layouts.app', ['component' => '<employees-datatable/>']);
 })->name('show_employees');
 
 
 Route::post('/save-employee', 'EmployeeController@save');
 Route::get('/get-employees', 'EmployeeController@getEmployees');
+Route::post('/delete-employee', 'EmployeeController@delete');

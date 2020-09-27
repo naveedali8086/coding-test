@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmployeeRequest;
 use App\Models\Employee;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EmployeeController extends Controller
@@ -43,5 +44,31 @@ class EmployeeController extends Controller
 
         return \response()->json(['has_err' => $has_err, 'message' => $message, 'data' => $data]);
 
+    }
+
+    public function delete(Request $request)
+    {
+        $message = '';
+        $has_err = false;
+
+        $employee = Employee::query()->find($request->get('id'));
+
+        try {
+
+            if ($employee && $employee->delete()) {
+                $message = 'Deleted Successfully';
+
+            } else {
+                $has_err = true;
+                $message = 'Something went wrong, please try again';
+            }
+
+        } catch (\Exception $e) {
+            $has_err = true;
+            $message = 'Something went wrong, please try again';
+
+        }
+
+        return \response()->json(['has_err' => $has_err, 'message' => $message]);
     }
 }
